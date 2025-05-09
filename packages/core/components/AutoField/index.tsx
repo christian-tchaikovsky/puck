@@ -107,6 +107,7 @@ type FieldPropsInternalOptional<ValueType = any, F = Field<any>> = FieldProps<
 > & {
   Label?: React.FC<FieldLabelPropsInternal>;
   label?: string;
+  labelIcon?: ReactNode;
   name?: string;
 };
 
@@ -116,6 +117,7 @@ export type FieldPropsInternal<ValueType = any, F = Field<any>> = FieldProps<
 > & {
   Label: React.FC<FieldLabelPropsInternal>;
   label?: string;
+  labelIcon?: ReactNode;
   id: string;
   name?: string;
 };
@@ -137,6 +139,7 @@ function AutoFieldInternal<
 
   const field = props.field as Field<ValueType>;
   const label = field.label;
+  const labelIcon = field.labelIcon;
 
   const defaultId = useSafeId();
   const resolvedId = id || defaultId;
@@ -168,6 +171,7 @@ function AutoFieldInternal<
     ...props,
     field,
     label,
+    labelIcon,
     Label,
     id: resolvedId,
   };
@@ -201,6 +205,10 @@ function AutoFieldInternal<
       });
     }
   }, []);
+
+  if (field.type === "slot") {
+    return null;
+  }
 
   if (field.type === "custom") {
     if (!field.render) {
@@ -277,6 +285,14 @@ export function AutoFieldPrivate<
     }
   }, [value]);
 
+  useEffect(() => {
+    if (!isFocused) {
+      if (value !== localValue) {
+        setLocalValue(value);
+      }
+    }
+  }, [isFocused, value, localValue]);
+
   const localProps = {
     value: localValue,
     onChange: onChangeLocal,
@@ -299,6 +315,10 @@ export function AutoField<
 
     return DefaultLabel;
   }, [props.readOnly]);
+
+  if (props.field.type === "slot") {
+    return null;
+  }
 
   return (
     <AutoFieldInternal<ValueType, FieldType> {...props} Label={DefaultLabel} />
